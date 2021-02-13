@@ -16,10 +16,15 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "list.h"
 #include "diffexfat.h"
+
 FILE *output = NULL;
 unsigned int print_level = PRINT_WARNING;
 static struct exfat_bootsec boot, boot2;
+node_t *fatlist = NULL;
+node_t *datalist = NULL;
+
 /**
  * Special Option(no short option)
  */
@@ -77,7 +82,6 @@ int main(int argc, char *argv[])
 	int fd[2] = {0};
 	struct stat st[2]  = {0};
 	FILE *fp = NULL;
-	void *a, *b;
 	size_t count;
 	char buffer[CMDSIZE] = {0};
 	char cmdline[CMDSIZE] = {0};
@@ -171,7 +175,6 @@ int main(int argc, char *argv[])
 		pr_msg("%lu\n", x);
 	}
 
-cmd_free:
 	pclose(fp);
 
 out1:

@@ -43,9 +43,9 @@ m4/ltversion.m4
 m4/lt~obsolete.m4
 
 # Generate object file by source code
-src/*.o
-src/.deps
-src/.dirstamp
+diff/*.o
+diff/.deps
+diff/.dirstamp
 config.h
 diffexfat
 diffexfat.8

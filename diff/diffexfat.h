@@ -49,6 +49,7 @@ extern FILE *output;
 
 #define SECSIZE          512
 #define CMDSIZE         1024
+
 /*
  * exFAT definition
  */
