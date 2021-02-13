@@ -48,6 +48,7 @@ extern FILE *output;
 #define pr_msg(fmt, ...)   fprintf(output, fmt, ##__VA_ARGS__)
 
 #define SECSIZE          512
+#define CMDSIZE         1024
 /*
  * exFAT definition
  */

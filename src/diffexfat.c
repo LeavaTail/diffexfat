@@ -76,7 +76,12 @@ int main(int argc, char *argv[])
 	int ret = 0;
 	int fd[2] = {0};
 	struct stat st[2]  = {0};
+	FILE *fp = NULL;
+	void *a, *b;
 	size_t count;
+	char buffer[CMDSIZE] = {0};
+	char cmdline[CMDSIZE] = {0};
+	unsigned long x;
 
 	while ((opt = getopt_long(argc, argv,
 					"",
@@ -153,6 +158,21 @@ int main(int argc, char *argv[])
 		ret = -count;
 		goto out1;
 	}
+
+	snprintf(cmdline, CMDSIZE, "/bin/cmp -l %s %s", argv[1], argv[2]);
+	if ((fp = popen(cmdline, "r")) == NULL) {
+		pr_err("popen %s: %s\n", cmdline, strerror(errno));
+		ret = -errno;
+		goto out1;
+	}
+
+	while(fgets(buffer, CMDSIZE - 1, fp) != NULL) {
+		x = strtoul(buffer, NULL, 0);
+		pr_msg("%lu\n", x);
+	}
+
+cmd_free:
+	pclose(fp);
 
 out1:
 	if (fd[0])
