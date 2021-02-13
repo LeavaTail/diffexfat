@@ -19,6 +19,7 @@
 #include "diffexfat.h"
 FILE *output = NULL;
 unsigned int print_level = PRINT_WARNING;
+static struct exfat_bootsec boot, boot2;
 /**
  * Special Option(no short option)
  */
@@ -73,6 +74,9 @@ int main(int argc, char *argv[])
 	int opt;
 	int longindex;
 	int ret = 0;
+	int fd[2] = {0};
+	struct stat st[2]  = {0};
+	size_t count;
 
 	while ((opt = getopt_long(argc, argv,
 					"",
@@ -99,5 +103,63 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	output = stdout;
+
+	if ((fd[0] = open(argv[1], O_RDONLY)) < 0) {
+		pr_err("open %s: %s\n", argv[1], strerror(errno));
+		ret = -errno;
+		goto out;
+	}
+
+	if ((fstat(fd[0], &(st[0]))) < 0) {
+		pr_err("stat %s: %s\n", argv[1], strerror(errno));
+		ret = -errno;
+		goto out2;
+	}
+
+	if ((fd[1] = open(argv[2], O_RDONLY)) < 0) {
+		pr_err("open %s: %s\n", argv[2], strerror(errno));
+		ret = -errno;
+		goto out1;
+	}
+
+	if ((fstat(fd[1], &(st[1]))) < 0) {
+		pr_err("stat %s: %s\n", argv[2], strerror(errno));
+		ret = -errno;
+		goto out1;
+	}
+
+	if (st[0].st_size != st[1].st_size) {
+		pr_err("file size is different.(%ld != %ld)\n", st[0].st_size, st[1].st_size);
+		ret = -fd[0];
+		goto out1;
+	}
+
+	count = pread(fd[0], &boot, SECSIZE, 0);
+	if (count < 0) {
+		pr_err("read: %s\n", strerror(errno));
+		ret = -count;
+		goto out1;
+	}
+
+	if (pread(fd[1], &boot2, SECSIZE, 0) != count) {
+		pr_err("read: %s\n", strerror(errno));
+		ret = -count;
+		goto out1;
+	}
+
+	if (memcmp(&boot, &boot2, SECSIZE)) {
+		pr_err("Boot sector is different.\n");
+		ret = -count;
+		goto out1;
+	}
+
+out1:
+	if (fd[0])
+		close(fd[0]);
+out2:
+	if (fd[1])
+		close(fd[1]);
+out:
 	return ret;
 }
