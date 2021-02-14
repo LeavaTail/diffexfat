@@ -209,4 +209,22 @@ struct exfat_dentry {
 #define EXFAT_MONTH  21
 #define EXFAT_YEAR   25
 
+#define EXFAT_SECTOR(b)      (1 << b.BytesPerSectorShift)
+#define EXFAT_CLUSTER(b)     ((1 << b.SectorsPerClusterShift) * EXFAT_SECTOR(b))
+#define EXFAT_FAT(b)         (b.FatOffset * EXFAT_SECTOR(b))
+#define EXFAT_HEAP(b)        (b.ClusterHeapOffset * EXFAT_SECTOR(b))
+
+/* General function */
+int get_sector(void *, int, off_t);
+int get_sectors(void *, int, off_t, size_t);
+int get_cluster(void *, off_t);
+int get_clusters(void *, off_t, size_t);
+int set_sector(void *, int, off_t);
+int set_sectors(void *, int, off_t, size_t);
+int set_cluster(void *, off_t);
+int set_clusters(void *, off_t, size_t);
+int print_sector(uint32_t);
+int print_cluster(uint32_t);
+void hexdump(void *, size_t);
+
 #endif /*_DIFFEXFAT_H */

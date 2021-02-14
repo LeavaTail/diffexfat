@@ -14,56 +14,60 @@ typedef struct node {
 	struct node *next;
 } node_t;
 
-static inline node_t *last_node(node_t *node)
-{
-	while (node != NULL && node->next != NULL)
-		node = node->next;
-	return node;
-}
-
-static inline void insert_node(node_t *head, uint64_t i)
+static inline void insert_node(node_t **head, uint64_t i)
 {
 	node_t *node;
 
-	if (!head) {
-		head = malloc(sizeof(node_t));
-		head->index = i;
-		head->next = NULL;
+	if (*head == NULL) {
+		node = malloc(sizeof(node_t));
+		node->index = i;
+		node->next = NULL;
+		*head = node;
 	} else {
 		node = malloc(sizeof(node_t));
 		node->index = i;
-		node->next = head->next;
-		head->next = node;
+		node->next = (*head)->next;
+		(*head)->next = node;
 	}
 }
 
-static inline void append_node(node_t *head, uint64_t i)
+static inline void append_node(node_t **head, uint64_t i)
 {
-	insert_node(last_node(head), i);
+	node_t *node;
+	node_t *tail = *head;
+
+	if (*head == NULL) {
+		node = malloc(sizeof(node_t));
+		node->index = i;
+		node->next = NULL;
+		*head = node;
+		return;
+	} 
+
+	while (tail->next != NULL)
+		tail = tail->next;
+
+	node = malloc(sizeof(node_t));
+	node->index = i;
+	node->next = tail->next;
+	tail->next = node;
 }
 
-static inline void delete_node(node_t *node)
+static inline void delete_node(node_t **head)
 {
-	node_t *tmp;
+	node_t *tmp = *head;
 
-	if (!node)
+	if (!tmp)
 		return;
 
-	if ((tmp = node->next) != NULL) {
-		node->next = tmp->next;
+	while (tmp != NULL) {
+		(*head)->next = tmp->next;
 		free(tmp);
+		tmp = (*head)->next;
 	}
-	free(node);
-}
 
-static inline node_t *search_node(node_t *node, uint64_t i)
-{
-	while (node != NULL && node->next != NULL) {
-		node = node->next;
-		if (i == node->index)
-			return node;
-	}
-	return NULL;
+	free(*head);
+	*head = NULL;
 }
 
 static inline void print_node(node_t *node)
